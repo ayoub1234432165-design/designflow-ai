@@ -96,6 +96,31 @@
             font-size: 16px;
         }
 
+        .usage-counter {
+            text-align: center;
+            font-size: 14px;
+            color: var(--gold);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .pro-locked {
+            filter: blur(4px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .pro-banner {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid var(--gold);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            color: var(--gold);
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
         /* Pricing Section */
         .pricing-section { max-width: 850px; width: 100%; text-align: center; }
         .pricing-grid { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
@@ -168,9 +193,13 @@
     <h1>DesignFlow - أداة تحليل الصور والتصاميم</h1>
 
     <!-- صندوق ادخال كود التفعيل -->
-    <div class="promo-box">
+    <div class="promo-box" id="promoBox">
         <input type="text" id="promoCodeInput" class="promo-input" placeholder="أدخل كود تفعيل النسخة المدفوعة">
         <button class="btn btn-gold" style="width: auto;" onclick="activateCode()">تفعيل ⚡</button>
+    </div>
+
+    <div class="usage-counter" id="counterBadge">
+        الاستخدام المجاني المتبقي: <span id="remAnalyses">3</span> من 3 تحليلات اليوم
     </div>
     
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
@@ -196,6 +225,11 @@
 
         <h4>التوصيات والتقرير الحقيقي:</h4>
         <ul id="recommendationsList"></ul>
+
+        <!-- تنبيه الترقية داخل التقرير -->
+        <div id="proLockBanner" class="pro-banner" style="display:none;">
+            🔒 تم إخفاء التقرير الكامل وأكواد الألوان الدقيقة. اشترك في خطة PRO لتنزيل التقرير الشامل وإزالة القيود!
+        </div>
     </div>
 </div>
 
@@ -208,8 +242,8 @@
                 <h3>الخطة المجانية</h3>
                 <div class="price">0 ج.م <small>/ للأبد</small></div>
                 <ul class="features">
-                    <li>3 تحليلات صور يومياً</li>
-                    <li>استخراج ألوان التصميم الأساسية</li>
+                    <li>3 تحليلات صور يومياً فقط</li>
+                    <li>استخراج ألوان مبسط</li>
                     <li>فحص التباين والسطوع</li>
                 </ul>
             </div>
@@ -261,8 +295,9 @@
 
     let loadedImage = null;
     let isProUser = false;
+    let usageCount = 0;
+    const MAX_FREE_USAGE = 3;
 
-    // كود التفعيل السري الخاص بك
     const VALID_PRO_CODE = "PRO2026";
 
     function activateCode() {
@@ -270,7 +305,11 @@
         if (inputVal === VALID_PRO_CODE) {
             isProUser = true;
             alert("تم تفعيل حسابك بنجاح للنسخة الاحترافية PRO! 🎉");
-            document.querySelector('.promo-box').innerHTML = "<p style='color:#10b981; font-weight:bold; margin:0;'>✨ حسابك مفعّل بالكامل (نسخة PRO احترافية)</p>";
+            document.getElementById('promoBox').innerHTML = "<p style='color:#10b981; font-weight:bold; margin:0;'>✨ حسابك مفعّل بالكامل (نسخة PRO احترافية)</p>";
+            document.getElementById('counterBadge').style.display = 'none';
+            document.getElementById('proLockBanner').style.display = 'none';
+            document.getElementById('recommendationsList').classList.remove('pro-locked');
+            analyzeBtn.disabled = false;
         } else {
             alert("كود التفعيل غير صحيح! يرجى التواصل عبر الواتساب للحصول على كود صحيح.");
         }
@@ -293,6 +332,18 @@
 
     function analyzeImage() {
         if (!loadedImage) return;
+
+        // التحقق من الحدود المجانية
+        if (!isProUser) {
+            if (usageCount >= MAX_FREE_USAGE) {
+                alert("🔒 لقد استنفذت الحد المجاني (3 تحليلات اليوم)! يرجى الترقية لخطة PRO وإدخال كود التفعيل المترتب لفتح استخدام غير محدود.");
+                openPaymentModal();
+                return;
+            }
+            usageCount++;
+            const remaining = MAX_FREE_USAGE - usageCount;
+            document.getElementById('remAnalyses').innerText = remaining;
+        }
 
         canvas.width = loadedImage.width;
         canvas.height = loadedImage.height;
@@ -339,11 +390,14 @@
 
         const paletteBox = document.getElementById('paletteBox');
         paletteBox.innerHTML = '';
-        palette.forEach(color => {
+
+        // في الخطة المجانية نعرض أول لونين فقط وباقي التقرير يتشوش
+        const displayColors = isProUser ? palette : palette.slice(0, 2);
+        displayColors.forEach(color => {
             const swatch = document.createElement('div');
             swatch.className = 'color-swatch';
             swatch.style.backgroundColor = color;
-            swatch.innerText = color;
+            swatch.innerText = isProUser ? color : "🔒 PRO";
             paletteBox.appendChild(swatch);
         });
 
@@ -354,6 +408,14 @@
             li.innerText = r;
             recList.appendChild(li);
         });
+
+        if (!isProUser) {
+            recList.classList.add('pro-locked');
+            document.getElementById('proLockBanner').style.display = 'block';
+        } else {
+            recList.classList.remove('pro-locked');
+            document.getElementById('proLockBanner').style.display = 'none';
+        }
 
         results.style.display = 'block';
     }
