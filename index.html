@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DesignFlow AI - أداة تحليل التصميم الحقيقية</title>
+    
+    <!-- كلمات البحث الأكثر استهدافاً وبحثاً على جوجل -->
+    <title>تحليل الصور والتصاميم مجاناً | استخراج الألوان وفحص الجودة - DesignFlow</title>
+    <meta name="description" content="أداة مجانية لتنسيق وتحليل الصور والتصاميم أونلاين. اعرف ألوان تصميمك، افحص التباين والسطوع، وتحقق من جودة الصور بضغطة زر واحدة بدون تسجيل.">
+    <meta name="keywords" content="تعديل صور, استخراج الألوان من الصورة, فحص جودة الصورة, معرفة درجة اللون, تنسيق ألوان الصور, تحسين جودة الصور, تحليل الصور, برنامج تعديل الألوان, DesignFlow, تصميم جرافيك, ألوان الفوتوشوب">
+    <meta name="author" content="DesignFlow AI">
+    <meta name="robots" content="index, follow">
+
+    <!-- للظهور بشكل احترافي عند مشاركة الرابط -->
+    <meta property="og:title" content="تحليل الصور والتصاميم واستخراج الألوان مجاناً">
+    <meta property="og:description" content="افحص جودة تصميمك واستخرج الألوان الأساسية مجاناً وفي ثوانٍ.">
+    <meta property="og:type" content="website">
+
     <style>
         :root {
             --bg: #0f172a;
@@ -76,15 +88,15 @@
 <body>
 
 <div class="container">
-    <h1>DesignFlow - تحليل التصميم الفعلي</h1>
+    <h1>DesignFlow - أداة تحليل الصور واستخراج الألوان</h1>
     
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-        <p>اضغط هنا لرفع صورة التصميم</p>
+        <p>اضغط هنا لرفع الصورة أو التصميم</p>
         <input type="file" id="fileInput" accept="image/*">
         <img id="preview" class="preview-img">
     </div>
 
-    <button id="analyzeBtn" class="btn" disabled onclick="analyzeImage()">تحليل التصميم الآن 🚀</button>
+    <button id="analyzeBtn" class="btn" disabled onclick="analyzeImage()">تحليل الصورة الآن 🚀</button>
 
     <div id="results" class="results">
         <div class="score-card">
@@ -152,16 +164,14 @@
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imgData.data;
 
-        // 1. حساب السطوع والتباين الفعليين
         let totalBrightness = 0;
         let rgbValues = [];
 
-        for (let i = 0; i < data.length; i += 16) { // أخذ عينات للأداء
+        for (let i = 0; i < data.length; i += 16) {
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
 
-            // معادلة السطوع الإدراكي
             const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
             totalBrightness += brightness;
             rgbValues.push({r, g, b, brightness});
@@ -170,17 +180,14 @@
         const sampleCount = rgbValues.length;
         const avgBrightness = Math.round(totalBrightness / sampleCount);
 
-        // حساب التباين (Standard Deviation للسطوع)
         let varianceSum = 0;
         rgbValues.forEach(p => {
             varianceSum += Math.pow(p.brightness - avgBrightness, 2);
         });
         const contrast = Math.round(Math.sqrt(varianceSum / sampleCount));
 
-        // 2. استخراج الألوان الأساسية
         const palette = extractPalette(rgbValues);
 
-        // 3. حساب الـ Score الحقيقي
         let score = 100;
         const recs = [];
 
@@ -208,13 +215,11 @@
             recs.push("أبعاد ودقة التصميم ممتازة للنشر.");
         }
 
-        // عرض النتائج
         document.getElementById('scoreVal').innerText = `${score} / 100`;
         document.getElementById('dimensionsVal').innerText = `${loadedImage.width}x${loadedImage.height} px`;
         document.getElementById('brightnessVal').innerText = `${avgBrightness} / 255`;
         document.getElementById('contrastVal').innerText = `${contrast}`;
 
-        // عرض الألوان
         const paletteBox = document.getElementById('paletteBox');
         paletteBox.innerHTML = '';
         palette.forEach(color => {
@@ -225,7 +230,6 @@
             paletteBox.appendChild(swatch);
         });
 
-        // عرض التوصيات
         const recList = document.getElementById('recommendationsList');
         recList.innerHTML = '';
         recs.forEach(r => {
@@ -238,7 +242,6 @@
     }
 
     function extractPalette(samples) {
-        // خوارزمية مبسطة لاختيار 4 ألوان مميزة
         const colors = [];
         const step = Math.floor(samples.length / 4);
         for (let i = 0; i < 4; i++) {
