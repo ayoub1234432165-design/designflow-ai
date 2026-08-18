@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="google-site-verification" content="-aD-0vIASkKVZJzZDf4IiZR7sfMg5eK6QkLgDKY8YVI" />    <meta charset="UTF-8">
+    <!-- كود إثبات جوجل -->
+    <meta name="google-site-verification" content="-aD-0vIASkKVZJzZDf4IiZR7sfMg5eK6QkLgDKY8YVI" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>تحليل الصور والتصاميم مجاناً | DesignFlow Pro</title>
@@ -295,10 +297,20 @@
 
     let loadedImage = null;
     let isProUser = false;
-    let usageCount = 0;
     const MAX_FREE_USAGE = 3;
-
     const VALID_PRO_CODE = "PRO2026";
+
+    // ---- نظام حفظ المحاولات بالـ localStorage لمنع خدعة الـ Refresh ----
+    let usageCount = localStorage.getItem("designflow_usage");
+    if (usageCount === null) {
+        usageCount = 0;
+        localStorage.setItem("designflow_usage", 0);
+    } else {
+        usageCount = parseInt(usageCount);
+    }
+
+    // تحديث عدد المحاولات المعروض فور فتح الصفحة
+    document.getElementById('remAnalyses').innerText = Math.max(0, MAX_FREE_USAGE - usageCount);
 
     function activateCode() {
         const inputVal = document.getElementById('promoCodeInput').value.trim();
@@ -333,14 +345,18 @@
     function analyzeImage() {
         if (!loadedImage) return;
 
-        // التحقق من الحدود المجانية
+        // التحقق من الحدود المجانية عبر الـ localStorage
         if (!isProUser) {
             if (usageCount >= MAX_FREE_USAGE) {
-                alert("🔒 لقد استنفذت الحد المجاني (3 تحليلات اليوم)! يرجى الترقية لخطة PRO وإدخال كود التفعيل المترتب لفتح استخدام غير محدود.");
+                alert("🔒 لقد استنفذت الحد المجاني (3 تحليلات اليوم)! يرجى الترقية لخطة PRO وإدخال كود التفعيل لفتح استخدام غير محدود.");
                 openPaymentModal();
                 return;
             }
+            
+            // زيادة المحاولات وحفظها فوراً في المتصفح
             usageCount++;
+            localStorage.setItem("designflow_usage", usageCount);
+
             const remaining = MAX_FREE_USAGE - usageCount;
             document.getElementById('remAnalyses').innerText = remaining;
         }
@@ -391,7 +407,6 @@
         const paletteBox = document.getElementById('paletteBox');
         paletteBox.innerHTML = '';
 
-        // في الخطة المجانية نعرض أول لونين فقط وباقي التقرير يتشوش
         const displayColors = isProUser ? palette : palette.slice(0, 2);
         displayColors.forEach(color => {
             const swatch = document.createElement('div');
@@ -441,6 +456,5 @@
         document.getElementById('paymentModal').style.display = 'none';
     }
 </script>
-
 </body>
 </html>
